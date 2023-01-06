@@ -1,6 +1,7 @@
 FROM buildpack-deps:bullseye AS builder
 
 ARG rakudo_version=2022.12
+ARG zef_version=0.14.6
 ARG gpg_key="59E634736AFDCF9C6DBAC382602D51EACA887C01"
 
 RUN wget -O /tmp/rakudo.tar.gz "https://rakudo.org/dl/rakudo/rakudo-${rakudo_version}.tar.gz"
@@ -20,6 +21,11 @@ WORKDIR /usr/src/raku
 RUN tar -xzf /tmp/rakudo.tar.gz -C /usr/src/raku --strip-components=1
 RUN perl Configure.pl --backends=moar --gen-moar --gen-nqp --prefix="/raku"
 RUN make install
+
+RUN wget -O /tmp/zef.tar.gz "https://github.com/ugexe/zef/archive/refs/tags/v${zef_version}.tar.gz"
+RUN mkdir /usr/src/zef
+RUN tar -xzf /tmp/zef.tar.gz -C /usr/src/zef --strip-components=1
+RUN /raku/bin/raku -I/usr/src/zef /usr/src/zef/bin/zef install /usr/src/zef
 
 FROM debian:bullseye
 WORKDIR /root
